@@ -176,6 +176,8 @@ Update_Service() {
 
 # Configuration of server automatic reboots
 Configure_Reboot() {
+  #Set timezone to Manila
+  sudo timedatectl set-timezone Asia/Manila
   # Automatic reboot at 4am configuration
   TimeZone=$(cat /etc/timezone)
   CurrentTime=$(date)
@@ -272,10 +274,9 @@ Fix_Permissions() {
 
 #################################################################################################
 
-Print_Style "Minecraft Server installation script by James A. Chambers - https://jamesachambers.com/" "$MAGENTA"
+Print_Style "Minecraft Server installation script" "$MAGENTA"
 Print_Style "Version $Version will be installed.  To change this, open SetupMinecraft.sh and change the \"Version\" variable to the version you want to install." "$MAGENTA"
-Print_Style "Latest version is always available at https://github.com/TheRemote/RaspberryPiMinecraft" "$MAGENTA"
-Print_Style "Don't forget to set up port forwarding on your router!  The default port is 25565" "$MAGENTA"
+
 
 if [[ -e "SetupMinecraft.sh" && "$AllowLocalCopy" -ne "1" ]]; then
   rm -f "SetupMinecraft.sh"
@@ -401,22 +402,33 @@ Update_Sudoers
 Fix_Permissions
 
 # Finished!
-Print_Style "Setup is complete.  Starting Minecraft server..." "$GREEN"
-sudo systemctl start minecraft.service
+Print_Style "Setup is complete." "$GREEN"
 
-# Wait up to 30 seconds for server to start
-StartChecks=0
-while [ $StartChecks -lt 30 ]; do
-  if screen -list | grep -q "\.minecraft"; then
-    screen -r minecraft
-    break
+echo -n "Do you want to start the server (y/n)?"
+  read answer < /dev/tty
+  if [ "$answer" != "${answer#[Yy]}" ]; then
+    sudo systemctl start minecraft.service
+
+    # Wait up to 30 seconds for server to start
+    StartChecks=0
+    while [ $StartChecks -lt 30 ]; do
+      if screen -list | grep -q "\.minecraft"; then
+        screen -r minecraft
+        break
+      fi
+      sleep 1
+      StartChecks=$((StartChecks + 1))
+    done
+
+    if [[ $StartChecks == 30 ]]; then
+      Print_Style "Server has failed to start after 30 seconds." "$RED"
+    else
+      screen -r minecraft
+    fi
+  else
+
+    Print_Style "You can start it later by typing sudo systemctl start minecraft.service" "$GREEN"
+    
   fi
-  sleep 1
-  StartChecks=$((StartChecks + 1))
-done
 
-if [[ $StartChecks == 30 ]]; then
-  Print_Style "Server has failed to start after 30 seconds." "$RED"
-else
-  screen -r minecraft
-fi
+

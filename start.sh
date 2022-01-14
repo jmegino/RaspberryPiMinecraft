@@ -1,8 +1,4 @@
 #!/bin/bash
-# Author: James A. Chambers - https://jamesachambers.com/
-# More information at https://jamesachambers.com/raspberry-pi-minecraft-server-script-with-startup-service/
-# GitHub Repository: https://github.com/TheRemote/RaspberryPiMinecraft
-# Minecraft Server startup script using screen -- view the console with screen -r minecraft
 
 # Set path variable
 USERPATH="pathvariable"
@@ -188,4 +184,4 @@ fi
 
 echo "Starting Minecraft server.  To view window type screen -r minecraft."
 echo "To minimize the window and let the server run in the background, press Ctrl+A then Ctrl+D"
-screen -dmS minecraft java -jar -Xms400M -XmxmemselectM dirname/minecraft/paperclip.jar
+screen -DmS minecraft java -jar -Xms400M -XmxmemselectM dirname/minecraft/paperclip.jar
